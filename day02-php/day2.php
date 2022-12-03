@@ -2532,60 +2532,23 @@ $map = (object)[
     'Z'=>2
 ];
 
-function calculate(array $results, array $matchArray):int{
-    return array_sum(array_map(
-        function(array $match):int{ //[C,Z]
+function calculate(array $results, array $matched):int{
+
+   $new = array_map(
+        function($match) use ($results):int{ //[C,Z]
             global $map;
+            global $results1;
+            global $results2;
             $opp = $map->{$match[0]};
             $me = $map->{$match[1]};
             return $results[$me][$opp];
         },
-        [$matchArray[0]]
-    ));
+        $matched
+    );
+    return array_sum($new);
 };
 print_r(calculate($results1,$matchArray));
+echo "\n";
 print_r(calculate($results2,$matchArray));
-
-// $scoresArray = array_sum(array_map(
-//     function(array $match):int{ //[C,Z]
-//         global $map, $results;
-//         $opp = $map->{$match[0]};
-//         $me = $map->{$match[1]};
-//         // echo "\n$map";
-//         // var_dump($map);
-//         // return 1; 
-//         return $results[$me][$opp];
-//     },
-//     $matchArray
-// ));
-
-// print_r($scoresArray)
-
-// $mapped = array_map(
-//     function(string $fulLString):int{
-//         $a = preg_split('/\r|\n/', $fulLString);
-//         $b = array_map(function(string $n){
-//             return intval($n);
-//         },$a);
-
-//         $c = array_reduce($a, function($carry, $item){
-//             $carry += $item;
-//             return $carry;
-//         });
-//         return $c;
-//     },
-//     $calArray);
-
-// arsort($mapped);
-// $top = array_slice($mapped,0,1)[0];
-// $sum = array_sum(array_slice($mapped,0,3));
-// print_r($top);
-// echo "\n";
-// print_r($sum);
-
-
-
-
-
 
 ?>
