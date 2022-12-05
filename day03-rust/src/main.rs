@@ -4,15 +4,19 @@
 
 // This code is editable, feel free to hack it!
 // You can always return to the original code by clicking the "Reset" button ->
-// use std::str::Split;
 use std::collections::HashSet;
-
+use std::str::Split;
 
 
 // This is the main function
 fn main() {
     // Statements here are executed when the compiled binary is called
-
+//     let input: &str = "vJrwpWtwJgWrhcsFMMfFFhFp
+// jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+// PmmdzqPrVvPwwTWBwg
+// wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+// ttgJtRGJQctTZtZT
+// CrZsJsPPZsGzwwsLwLmpwMDw";
     let input: &str = "vJrrdQlGBQWPTBTF
 fcpTMnMqMfTnZpgMfPbFBWzHPpBPzbCPPH
 mcVMfcsqZgmgVcmfgcmZmqZNJhrlrdhNhDdrRRJSvDTRhJlD
@@ -314,37 +318,62 @@ WHlNHWWldjpwntnWBPpPQFZFBFhZBZCZ
 TqqvgvmgfmvDVLLfqqLsrFBRhrrBFJQBGPgPZGCR
 mcDbcDmzLcmDDzfVzTQNjNzNztdzjNdwSHlH";
 
-    let split = input.split("\n");
+    let split: Split<&str> = input.split("\n");
     let mut count = 0;
 
-    for s in split {
-        let length = s.len();
-        let half = length/2;
-        let firstH = &s[0 .. half]; // make a slice of the string
-        let secondH = &s[half .. length]; 
+    // for s in split {
+    //     let length = s.len();
+    //     let half = length/2;
+    //     let firstH = &s[0 .. half]; // make a slice of the string
+    //     let secondH = &s[half .. length]; 
 
-        let a: HashSet<char>  = firstH.chars().collect(); //convert slice to hashset
-        let b: HashSet<char>  = secondH.chars().collect();
+    //     let a: HashSet<char>  = firstH.chars().collect(); //convert slice to hashset
+    //     let b: HashSet<char>  = secondH.chars().collect();
 
-        // println!("{:?}", firstH);
-        // println!("{:?}", secondH);
-        let mut intersection = a.intersection(&b).take(1).last(); //use interection function of hashset
-        // println!("{:?}",intersection);
-        let inter = intersection.unwrap();
-        println!("{:?}",inter);
+    //     // println!("{:?}", firstH);
+    //     // println!("{:?}", secondH);
+    //     let mut intersection = a.intersection(&b).take(1).last(); //use interection function of hashset
+    //     // println!("{:?}",intersection);
+    //     let inter = intersection.unwrap();
+    //     println!("{:?}",inter);
 
-        let dict = String::from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        let g_index = dict.find(*inter).unwrap_or(0) + 1;   // 3
-        println!("{:?}",g_index);
+    //     let dict = String::from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //     let g_index = dict.find(*inter).unwrap_or(0) + 1;   // 3
+    //     println!("{:?}",g_index);
         
+    //     count += g_index
+
+    // }
+
+    // println!("{}",count)
+    
+    let chunky: Vec<&str> = split.collect();
+    let chunked = chunky.chunks(3);
+    // println!("{:?}", chunked);
+
+
+    for (i, el) in chunked.enumerate(){
+        
+        let a: HashSet<char>  = el[0].chars().collect(); //convert slice to hashset
+        let b: HashSet<char>  = el[1].chars().collect(); //convert slice to hashset
+        let c: HashSet<char>  = el[2].chars().collect(); //convert slice to hashset
+        let mut inter1: String  = a.intersection(&b).collect();
+
+        let d: HashSet<char>  = inter1.chars().collect();
+        
+        let mut inter2: String  = d.intersection(&c).collect();
+
+        println!("The current index is {:?}", inter2);
+        let dict = String::from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        let g_index = dict.find(&*inter2).unwrap_or(0) + 1;   // 3
+        println!("{:?}",g_index);
+
         count += g_index
 
     }
 
-    println!("{}",count)
-
     // Print text to the console
-    // println!("{}",vec);
+    println!("{}",count);
 
 
 }

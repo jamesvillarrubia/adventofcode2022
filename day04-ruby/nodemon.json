@@ -5,8 +5,8 @@
         ".idea"
     ],
     "execMap": {
-        "php": "php"
+        "rb": "ruby"
     },
     "restartable": "r",
-    "ext": "php"
+    "ext": "rb"
 }
