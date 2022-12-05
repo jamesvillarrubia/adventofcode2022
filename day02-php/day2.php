@@ -2550,5 +2550,4 @@ function calculate(array $results, array $matched):int{
 print_r(calculate($results1,$matchArray));
 echo "\n";
 print_r(calculate($results2,$matchArray));
-
 ?>
