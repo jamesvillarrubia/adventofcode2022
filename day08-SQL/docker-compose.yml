@@ -19,3 +19,9 @@ services:
 
 volumes:
   database-data:
+
+# psql postgres://unicorn_user:magical_password@localhost:5432/rainbow_database?sslmode=require
+
+
+
+
