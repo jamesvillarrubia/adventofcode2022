@@ -1,0 +1,12 @@
+{
+    "verbose": false,
+    "ignore": [
+        ".git",
+        ".idea"
+    ],
+    "execMap": {
+        "sh": "bash"
+    },
+    "restartable": "r",
+    "ext": "sh"
+}
