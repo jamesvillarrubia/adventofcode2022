@@ -1,4 +1,7 @@
-let input1 = `
+#!/bin/bash
+
+
+read -r -d '' INPUT1 << EOM
 $ cd /
 $ ls
 dir a
@@ -7,11 +10,11 @@ dir a
 dir d
 $ cd a
 $ ls
-dir d
+dir e
 29116 f
 2557 g
 62596 h.lst
-$ cd d
+$ cd e
 $ ls
 584 i
 $ cd ..
@@ -21,9 +24,10 @@ $ ls
 4060174 j
 8033020 d.log
 5626152 d.ext
-7214296 k`;
+7214296 k
+EOM
 
-let input2 = `
+read -r -d '' INPUT2 << EOM
 $ cd /
 $ ls
 dir ddgtnw
@@ -1126,97 +1130,111 @@ $ cd lbz
 $ ls
 206810 gbcqz.lgw
 20178 rtgrs.hff
-`;
-console.log("\n\n\n\n************************")
+EOM
+
+readarray -t INPUTLINE <<<"$INPUT2"
+
+DIR_ARRAY=()
+SIZE_ARRAY=()
+PAR_ARRAY=()
+DEPTH=0
+DIR=""
+DIR_INDEX=-1
 
 
+function lastIndexOf(){
+    local VALUE=$1
+    shift
+    local ARRAY=("$@")
 
-let inputLine = input1.replace(/(?:\r\n|\r|\n)/g,"___")
-console.log(inputLine)
+    local INDEX=-1
+    ARRAY_LEN=${#ARRAY[@]}
+    for (( i=0; i<${ARRAY_LEN}; i++ )); do
 
+        if [[ "${ARRAY[$i]}" = "${VALUE}" ]]; then
+            INDEX=$i;
+        fi
+    done
 
-function findDir(dir,parIndex){
-    dirArray.push(dir)
-    sizeArray.push(0)
-    parArray.push(parIndex)
-    return dirArray.lastIndexOf(dir)
+    DIR_INDEX=$INDEX
+}
+function findDir(){
+
+    DIR_ARRAY+=($1)
+    SIZE_ARRAY+=(0)
+    PAR_ARRAY+=($2)
+
+    lastIndexOf "$DIR" "${DIR_ARRAY[@]}"
 }
 
+function processChunk(){
+    chunk=$1
+    echo -e "\n$chunk"
 
-let dirArray = []
-let sizeArray = []
-let parArray = []
-let depth = 0
-let dir
-let dirIndex
-function processChunk(chunk){
-    if(chunk.indexOf('$ cd ..')==0){
-        depth -=1
-        dirIndex = parArray[dirIndex]
-        dir = dirArray[dirIndex]
-    }else if(chunk.indexOf('$ cd')==0){
-        depth +=1
-        dir = chunk.match(/\$ cd (.*)/)[1] 
-        dirIndex = findDir(dir, dirIndex)
+    local DIG_REG='^[0-9]+$';
+    if [[ $1 == "$ cd .."* ]]; then
+        DEPTH=$((DEPTH-1))
+        DIR_INDEX=${PAR_ARRAY[DIR_INDEX]}
         
-    }else if(chunk.indexOf('dir ')==0){
-        // let childDir = chunk.split(" ")[1]
-        // let childIndex = findDir(childDir)
-        // parArray[childIndex]=findDir(dir)
-    }else if(chunk.match(/\d/)){
-        let fileSize = chunk.split(" ")[0]
-        let reg = new RegExp(/^\d+$/);
-        fileSize = reg.test(fileSize) ? parseInt(fileSize) : 0
-        sizeArray[dirIndex] += fileSize
-    }
+    elif [[ $1 == "$ cd"* ]]; then
+        DEPTH=$((DEPTH+1))
+        REGEX='\$ cd (.*)'
+        [[ $1 =~ $REGEX ]]
+        DIR=${BASH_REMATCH[1]}
+
+        findDir "$DIR" "$DIR_INDEX"
+
+    elif [[ $1 =~ ^[0-9] ]]; then
+        local CHUNK_ARRAY=($chunk)
+        SIZE_ARRAY[$DIR_INDEX]=$((SIZE_ARRAY[$DIR_INDEX] + ${CHUNK_ARRAY[0]}))
+    fi
 }
 
-inputLine.split("___").forEach(c=>{
-    processChunk(c)
-    // while(depth!=0){
-    //     sizeArray[dirIndex]
-    // }
-})
-// console.log(dirArray)
-// console.log(sizeArray)
-// console.log(parArray)
+function reverseAdd(){
+    local ARRAY_LEN=${#PAR_ARRAY[@]}
+
+    for (( i=0; i<${ARRAY_LEN}; i++ )); do
+        local n=$(($ARRAY_LEN-i-1))
+        local PAR_IND="${PAR_ARRAY[$n]}"
+        if [[ $n > 0 ]]; then
+            SIZE_ARRAY[$PAR_IND]=$((SIZE_ARRAY[$PAR_IND] + SIZE_ARRAY[$n]))
+        fi
+    done
+}
+
+for i in "${INPUTLINE[@]}"; do
+  processChunk "$i"
+done
+
+reverseAdd;
+echo "DIR_ARRAY:  ${DIR_ARRAY[@]}" >&2
+echo "SIZE_ARRAY: ${SIZE_ARRAY[@]}" >&2
+echo "PAR_ARRAY:  ${PAR_ARRAY[@]}" >&2
+
+echo "SUM OF <100000"
+SUM=0;
+for i in "${SIZE_ARRAY[@]}"; do
+    if [[ $(($i)) -lt 100000 ]]; then
+        SUM=$(($SUM+$i))
+    fi
+done
+echo "Part1: $SUM"
 
 
-//get biggest number
-// let max = Math.max( ...parArray.slice(1) );
-// console.log(max)
-// let rParArray = parArray.reverse()
-// let rSizeArray = sizeArray.reverse()
+REMAINING=$((70000000-${SIZE_ARRAY[0]}))
+echo $REMAINING
+MIN_FOLDER_SIZE=$((30000000-$REMAINING))
+echo $MIN_FOLDER_SIZE
 
+GAP=$((${SIZE_ARRAY[0]}))
+SIZE=0;
+for i in "${SIZE_ARRAY[@]}"; do
+    if [[ $i -gt $MIN_FOLDER_SIZE ]]; then
+        if [[  $GAP -gt $(($i - $MIN_FOLDER_SIZE ))  ]]; then
+            GAP=$(( $i - $MIN_FOLDER_SIZE))
+            SIZE=$i
+        fi
+    fi
+done
+echo "Part2: $SIZE"
 
-parArray.slice().reverse().forEach((parentIndex,i)=>{
-    i = parArray.length - i -1
-    if(i>0)
-        // console.log("par: ",parentIndex, i)
-        sizeArray[parentIndex] += sizeArray[i]
-})
-
-let newSizeArray = sizeArray.filter(s=>s<=100000)
-
-// console.log('dirArray', dirArray)
-// console.log('sizeArray', sizeArray)
-// console.log('parArray', parArray)
-console.log("Part 1: ", newSizeArray.reduce((a,n)=>a+=n,0))
-
-let remaining = 70000000 - sizeArray[0]
-// console.log(remaining)
-let minFolderSize = 30000000 - remaining
-// console.log(minFolderSize)
-
-let gap = sizeArray[0];
-let size;
-sizeArray.forEach(s=>{
-    if(s > minFolderSize){
-        // console.log(s, s - minFolderSize)
-        if(gap > s - minFolderSize){
-            gap = s - minFolderSize
-            size = s;
-        }
-    }
-})
-console.log("Part 2: ", size)
