@@ -1,0 +1,12 @@
+{
+    "verbose": false,
+    "ignore": [
+        ".git",
+        ".idea"
+    ],
+    "execMap": {
+        "pas": "fpc"
+    },
+    "restartable": "r",
+    "ext": "pas"
+}
