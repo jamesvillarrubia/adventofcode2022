@@ -1,6 +1,5 @@
 
 Unit grids;
-{$mode delphi}
 
 Interface
 
@@ -24,8 +23,8 @@ Interface
   function letterToHeight(s:string):integer;
   function findSorE(var a:strGrid; se:string):intArr;
   function getNeighbors(x,y,maxX,maxY:integer):intGrid;
-  function getGridNumberFromXY(x,y,maxX:integer):integer;
-  function getXYFromGridNumber(n,maxX:integer):intArr;
+  function getGridNumberFromXY(x,y,countX:integer):integer;
+  function getXYFromGridNumber(n,countX:integer):intArr;
 
 
 Implementation
@@ -37,26 +36,26 @@ uses sysutils, Math;
       neighbors: intGrid;
     begin
         a[0]:=x; //bottom
-        a[1]:=y-1;     
+        a[1]:=y+1;     
 
         b[0]:=x;// top
-        b[1]:=y+1; 
+        b[1]:=y-1; 
 
         c[0]:=x-1; //left
         c[1]:=y;
 
         d[0]:=x+1; //right
         d[1]:=y;
-        writeln('maxX: ',maxX, ' maxY: ',maxY);
+        // writeln('maxX: ',maxX, ' maxY: ',maxY);
         setlength(neighbors,0,0);
         if(x>0) then
           gridAppend(neighbors,c);
         if(y>0) then
-          gridAppend(neighbors,a);
+          gridAppend(neighbors,b);
         if(x<maxX) then
           gridAppend(neighbors,d);
         if(y<maxY) then
-          gridAppend(neighbors,b);
+          gridAppend(neighbors,a);
       getNeighbors:=neighbors;
     end;
 
@@ -141,28 +140,33 @@ uses sysutils, Math;
       writeln;  
     end;
 
-  function getGridNumberFromXY(x,y,maxX:integer):integer;
-
+  function getGridNumberFromXY(x,y,countX:integer):integer;
+    //countX should be 4 not 3
     // 0  1  2  3
     // 4  5  6  7
     // 8  9 10 11
 
-    // g = x + y*maxX
+    // 0  1  2  3 
+    // 4  5  6  7
+    // 8  9 10 11
+
+    // g = x + y * countX
     // 5 = 1,1
     // 7 = 3,1
     // 8 = 0,2
 
     begin
-      getGridNumberFromXY:= x + y * maxX
+      getGridNumberFromXY:= x + y * countX
     end;
 
-  function getXYFromGridNumber(n,maxX:integer):intArr;
+  function getXYFromGridNumber(n,countX:integer):intArr;
     var
       o : intArr;
     begin
       setlength(o,2);
-      o[0]:= n mod maxX;
-      o[1]:= Floor(maxX);
+      o[0]:= n mod countX;
+      o[1]:= Floor(n/countX);
+      // writeln('o[0]: ',o[0],' n: ',n, ' countX: ', countX );
       getXYFromGridNumber:=o;
     end;
 

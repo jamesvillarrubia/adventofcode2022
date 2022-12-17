@@ -8,23 +8,10 @@ type
    // TStringArray = array of string;
 
 var 
-   q: tFifo;
-   visited: array of integer;
-   heights: array of integer;
-   prev: intGrid;
-   numberOfNodes: integer;
-   sum: integer;
-   number: integer;
-   parents: array of integer;
    i, j, n: integer;
-   split: array of AnsiString;
-   SY: TStringList;
-   S: string;
-   A: TStringArray;
-
-
    letterGrid: strGrid;
    heightGrid: intGrid;
+   prev: intArr;
 
 
    // procedure solve(s, n:integer);
@@ -37,17 +24,26 @@ var
 
 
 
-function solve(var lg:strGrid): intGrid;
+function solve(var lg:strGrid): intArr;
    var
       // node: integer;
-      maxX,maxY: integer;
+      numberOfNodes: integer;
+      sum: integer;
+      number: integer;
+      parents: array of integer;
+      i, j, n: integer;
+      split: array of AnsiString;
+
+
+      maxX,maxY,countX, countY: integer;
       sX,sY: integer;
-      s,e: intArr;
       eX,eY:integer;
       nX,nY:integer;
+      s,e: intArr;
+
       q: tFifo;
       visited: intGrid; //tracks where you have been;
-      prev: intGrid; // tracks parent nodes
+      prev: intArr; // tracks parent nodes
       node: tNode;
       neighbors: intGrid;
       next: intArr;
@@ -58,18 +54,19 @@ function solve(var lg:strGrid): intGrid;
 
    begin
       //get the maxX and maxY
-      maxX:= Length(lg[0]);
-      maxY:= Length(lg);
-      writeln(maxX, ' by ', maxY);
+      countX:= Length(lg[0]);
+      countY:= Length(lg);
+      // writeln(maxX, ' by ', maxY);
 
       // find the S and E
       s:=findSorE(lg,'S');
       e:=findSorE(lg,'E');
-      writeln('s at: ',s[0],' ',s[1]);
-      writeln('e at: ',e[0],' ',e[1]);
+      // writeln('s at: ',s[0],' ',s[1]);
+      // writeln('e at: ',e[0],' ',e[1]);
 
-      setlength(visited,maxY,maxX);
-      setlength(prev,maxY,maxX);  
+      setlength(visited,countY,countX);
+      setlength(prev,countY*countX); 
+      initQueue(q); 
       enqueue(q,s[0],s[1]);
 
       for i:=Low(visited) to High(visited) do  
@@ -81,50 +78,50 @@ function solve(var lg:strGrid): intGrid;
 
       while q.first <> Nil do
          begin
-            writeln(' ');
+            // writeln(' ');
             // nX:=0;
             // nY:=0;
             SetLength(neighbors,0,0);
             dequeue(q,nX,nY);
             // writeln('queue length: ', q.length);
-            neighbors := getNeighbors(nX,nY,maxX-1,maxY-1);
-            printGrid(lg);
-            printGrid(visited);
-            writeln('node: ',nX,', ',nY, ', ',lg[nY][nX]);
-            writeln('neighbors: ');
+            neighbors := getNeighbors(nX,nY,countX-1,countY-1);
+            // printGrid(lg);
+            // printGrid(visited);
+            // writeln('node: ',nX,', ',nY, ', ',lg[nY][nX], ': ',getGridNumberFromXY(nX,nY,countX));
+            // writeln('neighbors: ');
             // printGrid(neighbors);
             currH:= letterToHeight(lg[nY][nX]);
-            currNum:= getGridNumberFromXY(nY,nX,maxX);
+            currNum:= getGridNumberFromXY(nX,nY,countX);
             // prev[currNum];
 
             for next in neighbors do
                begin
-                  writeln('-- n: ',next[0],', ',next[1], ', ', lg[next[1]][next[0]], ', ',visited[next[1]][next[0]]);
+                  // writeln('-- n: ',next[0],', ',next[1], ', ', lg[next[1]][next[0]], ', ',visited[next[1]][next[0]]);
                   // printGrid(visited);
                   // writeln(visited[next[1]][next[0]]);
                   // writeln('after');
-                  nextNum:= getGridNumberFromXY(next[0],next[1],maxX);
+                  nextNum:= getGridNumberFromXY(next[0],next[1],countX);
 
                   if(visited[next[1]][next[0]]=0) then
                      begin 
-                        writeln('  -- not visited');
+                        // writeln('  -- not visited');
                         nextH:= letterToHeight(lg[next[1]][next[0]]);
                         // writeln('next: ',lg[next[0]][next[1]]);
-                        writeln('  -- heights: ',nextH,',',currH);
+                        // writeln('  -- heights: ',nextH,',',currH);
                         if( nextH <= currH+1 ) then
                            begin
                               // writeln(lg[next[0]][next[1]]);
                               // writeln('  --  -- postvisit');
                               enqueue(q,next[0],next[1]);
                               visited[next[1],next[0]]:=1;
-                              prev[nextNum] = currNum;
+                              prev[nextNum] := currNum;
 
                               // writeln('queue length: ', q.length);
                               // writeln('  --  -- postappend');
                            end;
                      end;
                end;
-            writeln('queue length: ', q.length);
+            // writeln('queue length: ', q.length);
 
          end;
       solve := prev;
@@ -132,15 +129,39 @@ function solve(var lg:strGrid): intGrid;
 
 
 
-procedure reconstructPath(prev:intGrid;lg:strGrid);
+procedure reconstructPath(prev:intArr;lg:strGrid);
    var 
-      s,e: intArr;
+      s,e, nextXY: intArr;
+      maxX, countX: integer;
+      sN: integer;
+      curr: integer;
+      counter: integer;
+      next: integer;
+
    begin
       e:=findSorE(lg,'E');
-      writeln('');
-      writeln('PATH to ', e[0],', ',e[1]);
-      printGrid(prev);
-      writeln(length(prev))
+      s:=findSorE(lg,'S');
+      countX:= length(lg[0]); // the count
+      maxX:= countX-1;
+      // writeln('countX ', countX);
+      // writeln('PATH to ', e[0],', ',e[1],', ', getGridNumberFromXY(e[0],e[1],countX));
+      // printArray(prev);
+      curr:=getGridNumberFromXY(e[0],e[1],countX);
+      counter:=0;
+      // printGrid(lg);
+      sN:=getGridNumberFromXY(s[0],s[1],countX);
+      while curr <> sN do
+         begin
+            next:= prev[curr];
+            nextXY:= getXYFromGridNumber(next, countX);
+            // writeln(nextXY[0], ',', nextXY[1],',   ',next);
+            counter := counter+1;
+            // writeln('curr: ', curr, ', #', counter,',  next: ',next, ',    ',nextXY[0],',',nextXY[1], lg[nextXY[1]][nextXY[0]]);
+            curr:= next;
+         end;
+      // writeln(length(prev))
+      writeln('PATH to ', e[0],', ',e[1],', ', getGridNumberFromXY(e[0],e[1],countX), ' counter: ',counter );
+
    end;
 
 procedure bfs(s,e:integer);
@@ -157,9 +178,10 @@ function readFromFile():strGrid;
       row: strArr;
       intRow: intArr;
       thegrid: strGrid;
+      theBs: intArr;
    begin
       //reading from file
-      assign(input, 'start.txt');
+      assign(input, 'input2.txt');
       reset(input);
       while not eof(input) do
       
@@ -172,7 +194,7 @@ function readFromFile():strGrid;
                   // gridAppend(intRow,Ord(singleline[i+1])-97);
                   // writeln(letterToHeight(singleline[i+1]));
                end;
-            printArray(row);
+            // printArray(row);
             // printArray(intRow);
             gridAppend(thegrid,row);
             setlength(row,0); //reset the internal array
@@ -185,10 +207,17 @@ function readFromFile():strGrid;
 
 begin
    letterGrid:=readFromFile();
-   writeln(length(letterGrid));
 
-   prev:=solve(letterGrid);
-   reconstructPath(prev, letterGrid);
-   printArray(prev);
-   writeln('in');
+   for i:=Low(letterGrid) to High(letterGrid) do  
+      begin  
+      for j:= Low(letterGrid[i]) to High(letterGrid[i]) do 
+         if(letterGrid[i,j]='b') then
+            begin
+               writeln(i,',',j,' ', letterGrid[i,j]); 
+               letterGrid[i,j]:='S';
+               prev:=solve(letterGrid);
+               reconstructPath(prev, letterGrid);
+               setlength(prev,0);
+            end;
+      end;  
 end.

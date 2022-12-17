@@ -7,17 +7,17 @@ Interface
   Type 
     pNode = ^tNode;
     tNode = Record
-      x,y: integer;
+      x,y: LongInt;
       next:  pNode;
     End;
 
     tFifo = Record
       first, last: pNode;
-      length: integer;
+      length: LongInt;
     End;
   Procedure initQueue(Var fifo: tFifo);
-  Procedure enqueue(Var fifo: tFifo; x,y: integer);
-  Function dequeue(Var fifo: tFifo; Var x,y: integer): boolean;
+  Procedure enqueue(Var fifo: tFifo; x,y: LongInt);
+  Function dequeue(Var fifo: tFifo; Var x,y: LongInt): boolean;
 
 Implementation
 
@@ -28,11 +28,10 @@ Implementation
     fifo.length := 0;
   End;
 
-  Procedure enqueue(Var fifo: tFifo; x,y: integer);
+  Procedure enqueue(Var fifo: tFifo; x,y: LongInt);
   Var 
     node: pNode;
   Begin
-    // writeln('1');
     new(node);
     // node^.value := value;
     node^.x := x;
@@ -46,13 +45,15 @@ Implementation
         end
     Else
       begin
-        fifo.last^.next := node;
+        // writeln('1');
+        fifo.last^.next := node; //
+        // writeln('2');
         fifo.length := fifo.length+1;
       end;
     fifo.last := node;
   End;
 
-  Function dequeue(Var fifo: tFifo; Var x,y: integer): boolean;
+  Function dequeue(Var fifo: tFifo; Var x,y: LongInt): boolean;
   Var 
     node: pNode;
   Begin
